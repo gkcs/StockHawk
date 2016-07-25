@@ -118,7 +118,5 @@ public class StockTaskService extends GcmTaskService {
             e.printStackTrace();
             return GcmNetworkManager.RESULT_FAILURE;
         }
-
     }
-
 }
