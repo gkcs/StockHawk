@@ -5,9 +5,6 @@ import net.simonvt.schematic.annotation.DataType;
 import net.simonvt.schematic.annotation.NotNull;
 import net.simonvt.schematic.annotation.PrimaryKey;
 
-/**
- * Created by sam_chordas on 10/5/15.
- */
 public class QuoteColumns {
   @DataType(DataType.Type.INTEGER) @PrimaryKey @AutoIncrement
   public static final String _ID = "_id";
