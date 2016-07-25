@@ -6,9 +6,6 @@ import net.simonvt.schematic.annotation.ContentUri;
 import net.simonvt.schematic.annotation.InexactContentUri;
 import net.simonvt.schematic.annotation.TableEndpoint;
 
-/**
- * Created by sam_chordas on 10/5/15.
- */
 @ContentProvider(authority = QuoteProvider.AUTHORITY, database = QuoteDatabase.class)
 public class QuoteProvider {
   public static final String AUTHORITY = "com.sam_chordas.android.stockhawk.data.QuoteProvider";
