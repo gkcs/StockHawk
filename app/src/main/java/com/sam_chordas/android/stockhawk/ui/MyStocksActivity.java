@@ -37,6 +37,10 @@ import com.sam_chordas.android.stockhawk.service.StockTaskService;
 import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
 
 public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+    public static final String TAG = "tag";
+    public static final String INIT = "init";
+    public static final String ADD = "add";
+    public static final String SYMBOL = "symbol";
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -67,7 +71,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mServiceIntent = new Intent(this, StockIntentService.class);
         if (savedInstanceState == null) {
             // Run the initialize task service so that some stocks appear upon an empty database
-            mServiceIntent.putExtra("tag", "init");
+            mServiceIntent.putExtra(TAG, INIT);
             if (isConnected) {
                 startService(mServiceIntent);
             } else {
@@ -114,8 +118,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                         toast.show();
                                     } else {
                                         // Add the stock to DB
-                                        mServiceIntent.putExtra("tag", "add");
-                                        mServiceIntent.putExtra("symbol", input.toString());
+                                        mServiceIntent.putExtra(TAG, ADD);
+                                        mServiceIntent.putExtra(SYMBOL, input.toString());
                                         startService(mServiceIntent);
                                     }
                                 }
