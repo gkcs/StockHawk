@@ -11,17 +11,23 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
+import com.sam_chordas.android.stockhawk.LineGraphActivity;
+import com.sam_chordas.android.stockhawk.SharedPreferenceManager;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
+import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.exceptions.StockDoesNotExistException;
+import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
-import static com.sam_chordas.android.stockhawk.data.QuoteProvider.AUTHORITY;
 import static com.sam_chordas.android.stockhawk.data.QuoteProvider.Quotes.CONTENT_URI;
-import static com.sam_chordas.android.stockhawk.rest.Utils.quoteJsonToContentVals;
 import static java.net.URLEncoder.encode;
 
 /**
@@ -32,7 +38,6 @@ import static java.net.URLEncoder.encode;
 public class StockTaskService extends GcmTaskService {
     public static final String INIT = "init";
     public static final String PERIODIC = "periodic";
-    public static final String SYMBOL = "symbol";
     public static final String UTF_8 = "UTF-8";
     public static final String ADD = "add";
     private String LOG_TAG = StockTaskService.class.getSimpleName();
@@ -51,6 +56,7 @@ public class StockTaskService extends GcmTaskService {
 
     @Override
     public int onRunTask(final TaskParams params) {
+        boolean isHistoric = false;
         if (mContext == null) {
             mContext = this;
         }
@@ -58,7 +64,9 @@ public class StockTaskService extends GcmTaskService {
         try {
             // Base URL for the Yahoo query
             urlStringBuilder.append("https://query.yahooapis.com/v1/public/yql?q=");
-            urlStringBuilder.append(encode("select * from yahoo.finance.quotes where symbol in (", UTF_8));
+            if (!params.getTag().equals("historic")) {
+                urlStringBuilder.append(URLEncoder.encode("select * from yahoo.finance.quotes where symbol in (", UTF_8));
+            }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -78,7 +86,7 @@ public class StockTaskService extends GcmTaskService {
                 initQueryCursor.moveToFirst();
                 for (int i = 0; i < initQueryCursor.getCount(); i++) {
                     mStoredSymbols.append("\"")
-                            .append(initQueryCursor.getString(initQueryCursor.getColumnIndex(SYMBOL)))
+                            .append(initQueryCursor.getString(initQueryCursor.getColumnIndex(QuoteColumns.SYMBOL)))
                             .append("\",");
                     initQueryCursor.moveToNext();
                 }
@@ -93,9 +101,25 @@ public class StockTaskService extends GcmTaskService {
             isUpdate = false;
             // get symbol from params.getExtra and build query
             try {
-                urlStringBuilder.append(encode("\"" + params.getExtras().getString(SYMBOL) + "\")", UTF_8));
+                urlStringBuilder.append(encode("\"" + params.getExtras().getString(QuoteColumns.SYMBOL) + "\")", UTF_8));
             } catch (final UnsupportedEncodingException e) {
                 Log.e(LOG_TAG, "Unsupported encoding for url: ", e);
+            }
+        } else if (params.getTag().equals(LineGraphActivity.TABLE_HISTORIC)) {
+            isHistoric = true;
+            //Getting historic data for past 7 days.
+            String stockInput = params.getExtras().getString(QuoteColumns.SYMBOL);
+            Date startDate = new Date();
+            Date endDate = new Date();
+            startDate.setTime(startDate.getTime() - 10 * 24 * 60 * 60 * 1000);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+            try {
+                urlStringBuilder.append(URLEncoder.encode("select * from yahoo.finance.historicaldata where symbol = \"" +
+                        stockInput + "\" and startDate = \"" +
+                        simpleDateFormat.format(startDate) + "\" and endDate = \"" +
+                        simpleDateFormat.format(endDate) + "\"", UTF_8));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
         }
         // finalize the URL for the API query.
@@ -111,7 +135,18 @@ public class StockTaskService extends GcmTaskService {
                 }
                 String json = fetchData(urlStringBuilder.toString());
                 Log.i(LOG_TAG, "onRunTask: Result from server: " + json);
-                mContext.getContentResolver().applyBatch(AUTHORITY, quoteJsonToContentVals(json));
+                try {
+                    mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,
+                            Utils.quoteJsonToContentVals(json, isHistoric));
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    SharedPreferenceManager.setGCMStatus(false);
+                    Log.d("status_task", SharedPreferenceManager.getGCMStatus() + "");
+                    return GcmNetworkManager.RESULT_FAILURE;
+                }
+            } catch (NumberFormatException e) {
+                Log.i(LOG_TAG, e.getMessage());
+                return GcmNetworkManager.RESULT_FAILURE;
             } catch (final RemoteException | OperationApplicationException e) {
                 Log.e(LOG_TAG, "Error applying batch insert", e);
             } catch (final StockDoesNotExistException e) {

@@ -1,9 +1,11 @@
 package com.sam_chordas.android.stockhawk.ui;
 
 import android.app.LoaderManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
@@ -19,6 +21,9 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -26,21 +31,28 @@ import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
 import com.melnykov.fab.FloatingActionButton;
+import com.sam_chordas.android.stockhawk.LineGraphActivity;
 import com.sam_chordas.android.stockhawk.R;
+import com.sam_chordas.android.stockhawk.SharedPreferenceManager;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
 import com.sam_chordas.android.stockhawk.rest.RecyclerViewItemClickListener;
-import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.service.StockIntentService;
 import com.sam_chordas.android.stockhawk.service.StockTaskService;
 import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
+
+import static com.sam_chordas.android.stockhawk.LineGraphActivity.COLUMN_BID_PRICE;
+import static com.sam_chordas.android.stockhawk.LineGraphActivity.COLUMN_CHANGE;
+import static com.sam_chordas.android.stockhawk.LineGraphActivity.COLUMN_PERCENT_CHANGE;
+import static com.sam_chordas.android.stockhawk.LineGraphActivity.COLUMN_SYMBOL;
 
 public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final String TAG = "tag";
     public static final String INIT = "init";
     public static final String ADD = "add";
     public static final String SYMBOL = "symbol";
+    public static final String RESULT_FAILURE = "result_failure";
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -51,21 +63,32 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
      */
     private CharSequence mTitle;
     private Intent mServiceIntent;
-    private ItemTouchHelper mItemTouchHelper;
     private static final int CURSOR_LOADER_ID = 0;
     private QuoteCursorAdapter mCursorAdapter;
     private Context mContext;
     private Cursor mCursor;
     boolean isConnected;
+    private ImageView imageView;
+    private RecyclerView recyclerView;
+    private FloatingActionButton fab;
+    private FrameLayout frameLayout;
+    private BroadcastReceiver mBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+        SharedPreferenceManager.init(getApplicationContext());
+        SharedPreferenceManager.setGCMStatus(true);
         final NetworkInfo activeNetwork = ((ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
         setContentView(R.layout.activity_my_stocks);
+        frameLayout = (FrameLayout) findViewById(R.id.main_view);
+        imageView = (ImageView) findViewById(R.id.error_image);
+        TextView errorText = (TextView) findViewById(R.id.error_text);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         // The intent service is for executing immediate pulls from the Yahoo API
         // GCMTaskService can only schedule tasks, they cannot execute immediately
         mServiceIntent = new Intent(this, StockIntentService.class);
@@ -74,8 +97,19 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             mServiceIntent.putExtra(TAG, INIT);
             if (isConnected) {
                 startService(mServiceIntent);
+                if (recyclerView.getVisibility() == View.GONE) {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    fab.setVisibility(View.VISIBLE);
+                }
             } else {
-                networkToast();
+                recyclerView.setVisibility(View.GONE);
+                fab.setVisibility(View.GONE);
+                imageView.setVisibility(View.VISIBLE);
+                if (errorText != null) {
+                    errorText.setVisibility(View.VISIBLE);
+                } else {
+                    throw new IllegalStateException("Null error text");
+                }
             }
         }
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -87,8 +121,13 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 new RecyclerViewItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View v, int position) {
-                        //TODO:
-                        // do something on item click
+                        Intent intent = new Intent(getApplicationContext(), LineGraphActivity.class);
+                        mCursor.moveToPosition(position);
+                        intent.putExtra(COLUMN_SYMBOL, mCursor.getString(mCursor.getColumnIndex(COLUMN_SYMBOL)));
+                        intent.putExtra(COLUMN_PERCENT_CHANGE, mCursor.getString(mCursor.getColumnIndex(COLUMN_PERCENT_CHANGE)));
+                        intent.putExtra(COLUMN_CHANGE, mCursor.getString(mCursor.getColumnIndex(COLUMN_CHANGE)));
+                        intent.putExtra(COLUMN_BID_PRICE, mCursor.getString(mCursor.getColumnIndex(COLUMN_BID_PRICE)));
+                        startActivity(intent);
                     }
                 }));
         recyclerView.setAdapter(mCursorAdapter);
@@ -126,14 +165,13 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                             })
                             .show();
                 } else {
-                    networkToast();
+                    errorToast(getString(R.string.network_toast));
                 }
 
             }
         });
 
-        mItemTouchHelper = new ItemTouchHelper(new SimpleItemTouchHelperCallback(mCursorAdapter));
-        mItemTouchHelper.attachToRecyclerView(recyclerView);
+        new ItemTouchHelper(new SimpleItemTouchHelperCallback(mCursorAdapter)).attachToRecyclerView(recyclerView);
 
         mTitle = getTitle();
         if (isConnected) {
@@ -152,17 +190,44 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     .setRequiresCharging(false)
                     .build());
         }
+        receiveBroadcast();
     }
 
+    private void receiveBroadcast() {
+        mBroadcastReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(RESULT_FAILURE)) {
+                    errorToast(getString(R.string.not_found_toast));
+                }
+            }
+        };
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mBroadcastReceiver);
+    }
 
     @Override
     public void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(RESULT_FAILURE);
+        registerReceiver(mBroadcastReceiver, intentFilter);
     }
 
-    public void networkToast() {
-        Toast.makeText(mContext, getString(R.string.network_toast), Toast.LENGTH_SHORT).show();
+    public void errorToast(String message) {
+        Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
     }
 
     public void restoreActionBar() {
@@ -184,17 +249,14 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        if (id == R.id.action_change_units) {
-            // this is for changing stock changes from percent value to dollar value
-            Utils.showPercent = !Utils.showPercent;
-            this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
+        switch (item.getItemId()) {
+            case R.id.action_change_units:
+                // this is for changing stock changes from percent value to dollar value
+                SharedPreferenceManager.setShowPercentage(!SharedPreferenceManager.getShowPercentage());
+                this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
+                break;
         }
 
         return super.onOptionsItemSelected(item);

@@ -6,12 +6,6 @@ import android.database.DataSetObserver;
 import android.provider.BaseColumns;
 import android.support.v7.widget.RecyclerView;
 
-/**
- * Created by sam_chordas on 10/6/15.
- * Credit to skyfishjy gist:
- * https://gist.github.com/skyfishjy/443b7448f59be978bc59
- * for the CursorRecyclerViewApater.java code and idea.
- */
 public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
     private static final String LOG_TAG = CursorRecyclerViewAdapter.class.getSimpleName();
     private Cursor mCursor;

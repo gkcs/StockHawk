@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.sam_chordas.android.stockhawk.R;
+import com.sam_chordas.android.stockhawk.SharedPreferenceManager;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.touch_helper.ItemTouchHelperAdapter;
@@ -36,7 +37,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
 
   @Override
   public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType){
-    robotoLight = Typeface.createFromAsset(mContext.getAssets(), "fonts/Roboto-Light.ttf");
+    robotoLight = Typeface.createFromAsset(mContext.getAssets(), mContext.getString(R.string.Roboto_font));
     View itemView = LayoutInflater.from(parent.getContext())
         .inflate(R.layout.list_item_quote, parent, false);
     ViewHolder vh = new ViewHolder(itemView);
@@ -65,7 +66,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
             mContext.getResources().getDrawable(R.drawable.percent_change_pill_red));
       }
     }
-    if (Utils.showPercent){
+    if (SharedPreferenceManager.getShowPercentage()){
       viewHolder.change.setText(cursor.getString(cursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE)));
     } else{
       viewHolder.change.setText(cursor.getString(cursor.getColumnIndex(QuoteColumns.CHANGE)));

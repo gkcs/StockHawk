@@ -8,5 +8,22 @@
     <string name="input_hint" translatable="false">FB</string>
     <string name="input_prefill" />
     <string name="network_toast">Uh-oh! This app requires an internet connection</string>
-    <string name="action_bar_content">This is the action bar</string>
+    <string name="action_bar_content">Add stocks here</string>
+    <string name="Roboto_font">fonts/Roboto-Light.ttf</string>
+    <string name="title_activity_line_graph">Stocks Line Graph</string>
+    <string name="default_symbol_text" translatable="false">GOOG</string>
+    <string name="price_text" translatable="false">1000.00</string>
+    <string name="change_text" translatable="false">100%</string>
+    <string name="recycler_view_text">List of Stocks with their data</string>
+    <string name="line_chart_text">Chart that displays Historic Data</string>
+    <string name="no_internet_error_msg">You are not connected!</string>
+    <string name="line_graph_activity_name" translatable="false">Stock Details</string>
+    <string name="not_found_toast" translatable="false">Stock not found</string>
+    <string name="historic_data_description">This Line Chart displays the historic data.</string>
+    <string name="historic_data_empty">Uh - Oh! Data is not available right now.</string>
+    <string name="historic_data">Historic Data</string>
+    <string name="data_set">Historic Data Set</string>
+    <string name="date_format" translatable="false">yyyy-MM-dd</string>
+    <string name="day_format" translatable="false">dd</string>
+    <string name="month_format" translatable="false">MM</string>
 </resources>

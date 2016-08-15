@@ -2,23 +2,21 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:clickable="true"
-    android:focusable="true"
+    android:layout_height="@dimen/list_item_height"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingEnd="16dp"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingStart="16dp">
-
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    >
     <TextView
         android:id="@+id/stock_symbol"
         style="@style/StockSymbolTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="start|center_vertical"
-        tools:text="GOOG" />
+        android:textSize="@dimen/text_size_detail_activity"
+        android:textAppearance="@android:style/TextAppearance.Large"
+        tools:text="@string/default_symbol_text" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -31,22 +29,19 @@
             style="@style/BidPriceTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingEnd="@dimen/price_text_padding"
-            android:paddingLeft="@dimen/price_text_padding"
             android:paddingRight="@dimen/price_text_padding"
-            android:paddingStart="@dimen/price_text_padding"
-            tools:text="1000.00" />
-
+            android:paddingLeft="@dimen/price_text_padding"
+            tools:text="@string/price_text"
+            />
         <TextView
             android:id="@+id/change"
+            android:background="@drawable/percent_change_pill"
             style="@style/PercentChangeTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/percent_change_pill"
-            android:paddingEnd="@dimen/change_text_padding"
             android:paddingLeft="@dimen/change_text_padding"
             android:paddingRight="@dimen/change_text_padding"
-            android:paddingStart="@dimen/change_text_padding"
-            tools:text="100%" />
+            tools:text="@string/change_text" />
     </LinearLayout>
+
 </LinearLayout>

@@ -4,6 +4,7 @@ import android.content.ContentProviderOperation;
 import android.util.Log;
 
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
+import com.sam_chordas.android.stockhawk.data.QuoteHistoricData;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.exceptions.StockDoesNotExistException;
 
@@ -15,26 +16,35 @@ import java.util.ArrayList;
 
 public class Utils {
 
+    public static final String QUERY_PARAM = "query";
+    public static final String COUNT = "count";
+    public static final String RESULTS_PARAM = "results";
+    public static final String QUOTE_PARAM = "quote";
+    public static final String BID_PARAM = "Bid";
+    public static final String NULL = "null";
+    public static final String SYMBOL_PARAM = "symbol";
+    public static final String CHANGE_IN_PERCENT = "ChangeinPercent";
+    public static final String CHANGE_PARAM = "Change";
     private static String LOG_TAG = Utils.class.getSimpleName();
 
     public static boolean showPercent = true;
 
-    public static ArrayList<ContentProviderOperation> quoteJsonToContentVals(String JSON) throws StockDoesNotExistException {
+    public static ArrayList<ContentProviderOperation> quoteJsonToContentVals(String JSON, boolean isHistoric) throws StockDoesNotExistException {
         ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
         try {
             JSONObject jsonObject = new JSONObject(JSON);
             if (jsonObject.length() != 0) {
-                jsonObject = jsonObject.getJSONObject("query");
-                int count = Integer.parseInt(jsonObject.getString("count"));
+                jsonObject = jsonObject.getJSONObject(QUERY_PARAM);
+                int count = Integer.parseInt(jsonObject.getString(COUNT));
                 if (count == 1) {
-                    jsonObject = jsonObject.getJSONObject("results").getJSONObject("quote");
-                    if (jsonObject.getString("Bid") != null && !"null".equalsIgnoreCase(jsonObject.getString("Bid"))) {
+                    jsonObject = jsonObject.getJSONObject(RESULTS_PARAM).getJSONObject(QUOTE_PARAM);
+                    if (jsonObject.getString(BID_PARAM) != null && !NULL.equalsIgnoreCase(jsonObject.getString(BID_PARAM))) {
                         batchOperations.add(buildBatchOperation(jsonObject));
                     } else {
                         throw new StockDoesNotExistException("Stock not found on server");
                     }
                 } else {
-                    final JSONArray resultsArray = jsonObject.getJSONObject("results").getJSONArray("quote");
+                    final JSONArray resultsArray = jsonObject.getJSONObject(RESULTS_PARAM).getJSONArray(QUOTE_PARAM);
                     if (resultsArray != null && resultsArray.length() != 0) {
                         for (int i = 0; i < resultsArray.length(); i++) {
                             batchOperations.add(buildBatchOperation(resultsArray.getJSONObject(i)));
@@ -74,11 +84,11 @@ public class Utils {
         ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(
                 QuoteProvider.Quotes.CONTENT_URI);
         try {
-            String change = jsonObject.getString("Change");
-            builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString("symbol"));
-            builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(jsonObject.getString("Bid")));
+            String change = jsonObject.getString(CHANGE_PARAM);
+            builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString(SYMBOL_PARAM));
+            builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(jsonObject.getString(BID_PARAM)));
             builder.withValue(QuoteColumns.PERCENT_CHANGE, truncateChange(
-                    jsonObject.getString("ChangeinPercent"), true));
+                    jsonObject.getString(CHANGE_IN_PERCENT), true));
             builder.withValue(QuoteColumns.CHANGE, truncateChange(change, false));
             builder.withValue(QuoteColumns.ISCURRENT, 1);
             if (change.charAt(0) == '-') {
@@ -91,5 +101,21 @@ public class Utils {
             e.printStackTrace();
         }
         return builder.build();
+    }
+
+    public static ContentProviderOperation buildBatchOperationHistoric(JSONObject jsonObject) {
+        try {
+            return ContentProviderOperation.newInsert(QuoteProvider.QuotesHistoric.CONTENT_URI)
+                    .withValue(QuoteHistoricData.SYMBOL, jsonObject.getString("Symbol"))
+                    .withValue(QuoteHistoricData.DATE, jsonObject.getString("Date"))
+                    .withValue(QuoteHistoricData.OPEN, jsonObject.getString("Open"))
+                    .withValue(QuoteHistoricData.HIGH, jsonObject.getString("High"))
+                    .withValue(QuoteHistoricData.LOW, jsonObject.getString("Low"))
+                    .withValue(QuoteHistoricData.CLOSE, jsonObject.getString("Close"))
+                    .build();
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "buildBatchOperationHistoric: Exception while parsing JSON", e);
+            return null;
+        }
     }
 }

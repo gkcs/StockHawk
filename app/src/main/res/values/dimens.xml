@@ -1,9 +1,33 @@
 <resources>
-  <!-- Default screen margins, per the Android Design guidelines. -->
-  <dimen name="activity_horizontal_margin">16dp</dimen>
-  <dimen name="activity_vertical_margin">16dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
 
-  <!-- Per the design guidelines, navigation drawers should be between 240dp and 320dp:
+    <!-- Per the design guidelines, navigation drawers should be between 240dp and 320dp:
          https://developer.android.com/design/patterns/navigation-drawer.html -->
-  <dimen name="navigation_drawer_width">240dp</dimen>
+    <dimen name="navigation_drawer_width">240dp</dimen>
+    <dimen name="chart_width">300dp</dimen>
+    <dimen name="list_item_height">72dp</dimen>
+    <dimen name="text_size_detail_activity">25sp</dimen>
+    <dimen name="price_text_padding">8dp</dimen>
+    <dimen name="change_text_padding">4dp</dimen>
+    <dimen name="error_image_padding_top">10dp</dimen>
+    <dimen name="error_image_horizontal_padding">8dp</dimen>
+    <dimen name="change_text_padding_vertical">5dp</dimen>
+    <dimen name="recycler_padding_top">30dp</dimen>
+
+    <!-- These resources are for the widget -->
+
+    <dimen name="stock_widget_margin">8dp</dimen>
+    <dimen name="widget_height">250dp</dimen>
+    <dimen name="widget_width">100dp</dimen>
+    <dimen name="widget_list_item_padding">6dp</dimen>
+    <dimen name="widget_list_item_bid_price_padding">10sp</dimen>
+    <dimen name="widget_list_item_change_padding">3dp</dimen>
+    <dimen name="widget_list_item_height">32dp</dimen>
+    <dimen name="widget_main_view_margin">10dp</dimen>
+    <dimen name="widget_main_view_padding">5dp</dimen>
+    <dimen name="widget_top_bar_vertical">4dp</dimen>
+    <dimen name="widget_top_bar_horizontal">8dp</dimen>
+
 </resources>
