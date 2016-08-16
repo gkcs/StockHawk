@@ -39,7 +39,11 @@ public class Utils {
                 if (count == 1) {
                     jsonObject = jsonObject.getJSONObject(RESULTS_PARAM).getJSONObject(QUOTE_PARAM);
                     if (jsonObject.getString(BID_PARAM) != null && !NULL.equalsIgnoreCase(jsonObject.getString(BID_PARAM))) {
-                        batchOperations.add(buildBatchOperation(jsonObject));
+                        if (isHistoric) {
+                            batchOperations.add(buildBatchOperationHistoric(jsonObject));
+                        } else {
+                            batchOperations.add(buildBatchOperation(jsonObject));
+                        }
                     } else {
                         throw new StockDoesNotExistException("Stock not found on server");
                     }
@@ -47,7 +51,11 @@ public class Utils {
                     final JSONArray resultsArray = jsonObject.getJSONObject(RESULTS_PARAM).getJSONArray(QUOTE_PARAM);
                     if (resultsArray != null && resultsArray.length() != 0) {
                         for (int i = 0; i < resultsArray.length(); i++) {
-                            batchOperations.add(buildBatchOperation(resultsArray.getJSONObject(i)));
+                            if (isHistoric) {
+                                batchOperations.add(buildBatchOperationHistoric(resultsArray.getJSONObject(i)));
+                            } else {
+                                batchOperations.add(buildBatchOperation(resultsArray.getJSONObject(i)));
+                            }
                         }
                     }
                 }
