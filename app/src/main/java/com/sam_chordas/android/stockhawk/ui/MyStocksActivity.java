@@ -21,7 +21,6 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,9 +30,8 @@ import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
 import com.melnykov.fab.FloatingActionButton;
-import com.sam_chordas.android.stockhawk.LineGraphActivity;
+import com.sam_chordas.android.stockhawk.GCMStateHolder;
 import com.sam_chordas.android.stockhawk.R;
-import com.sam_chordas.android.stockhawk.SharedPreferenceManager;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
@@ -42,10 +40,10 @@ import com.sam_chordas.android.stockhawk.service.StockIntentService;
 import com.sam_chordas.android.stockhawk.service.StockTaskService;
 import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
 
-import static com.sam_chordas.android.stockhawk.LineGraphActivity.COLUMN_BID_PRICE;
-import static com.sam_chordas.android.stockhawk.LineGraphActivity.COLUMN_CHANGE;
-import static com.sam_chordas.android.stockhawk.LineGraphActivity.COLUMN_PERCENT_CHANGE;
-import static com.sam_chordas.android.stockhawk.LineGraphActivity.COLUMN_SYMBOL;
+import static com.sam_chordas.android.stockhawk.ui.LineGraphActivity.COLUMN_BID_PRICE;
+import static com.sam_chordas.android.stockhawk.ui.LineGraphActivity.COLUMN_CHANGE;
+import static com.sam_chordas.android.stockhawk.ui.LineGraphActivity.COLUMN_PERCENT_CHANGE;
+import static com.sam_chordas.android.stockhawk.ui.LineGraphActivity.COLUMN_SYMBOL;
 
 public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final String TAG = "tag";
@@ -68,27 +66,21 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private Context mContext;
     private Cursor mCursor;
     boolean isConnected;
-    private ImageView imageView;
-    private RecyclerView recyclerView;
-    private FloatingActionButton fab;
-    private FrameLayout frameLayout;
     private BroadcastReceiver mBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
-        SharedPreferenceManager.init(getApplicationContext());
-        SharedPreferenceManager.setGCMStatus(true);
+        GCMStateHolder.setGCMStatus(true);
         final NetworkInfo activeNetwork = ((ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
         setContentView(R.layout.activity_my_stocks);
-        frameLayout = (FrameLayout) findViewById(R.id.main_view);
-        imageView = (ImageView) findViewById(R.id.error_image);
+        ImageView imageView = (ImageView) findViewById(R.id.error_image);
         TextView errorText = (TextView) findViewById(R.id.error_text);
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        fab = (FloatingActionButton) findViewById(R.id.fab);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         // The intent service is for executing immediate pulls from the Yahoo API
         // GCMTaskService can only schedule tasks, they cannot execute immediately
         mServiceIntent = new Intent(this, StockIntentService.class);
@@ -112,7 +104,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 }
             }
         }
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
 
@@ -133,7 +124,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         recyclerView.setAdapter(mCursorAdapter);
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.attachToRecyclerView(recyclerView);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -246,19 +236,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
-        //noinspection SimplifiableIfStatement
-        switch (item.getItemId()) {
-            case R.id.action_change_units:
-                // this is for changing stock changes from percent value to dollar value
-                SharedPreferenceManager.setShowPercentage(!SharedPreferenceManager.getShowPercentage());
-                this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
-                break;
+        if (item.getItemId() == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 

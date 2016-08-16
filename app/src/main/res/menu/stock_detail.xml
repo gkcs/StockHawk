@@ -3,9 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MyStocksActivity">
 
-    <item android:id="@+id/action_change_units"
-        android:title="@string/action_change_units"
-        android:icon="@drawable/ic_attach_money_white_24dp"
-        android:orderInCategory="99"
-        app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/action_settings"
+        app:showAsAction="never" />
 </menu>

@@ -48,6 +48,16 @@
                 android:value="com.sam_chordas.android.stockhawk.ui.MyStocksActivity" />
         </activity>
 
+
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".ui.MyStocksActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.MyStocksActivity" />
+        </activity>
+
         <service android:name="com.sam_chordas.android.stockhawk.service.StockIntentService" />
 
         <provider

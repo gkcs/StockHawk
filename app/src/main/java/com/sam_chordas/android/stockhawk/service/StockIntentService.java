@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.gms.gcm.TaskParams;
-import com.sam_chordas.android.stockhawk.SharedPreferenceManager;
+import com.sam_chordas.android.stockhawk.GCMStateHolder;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
 
@@ -34,9 +34,9 @@ public class StockIntentService extends IntentService {
         // We can call OnRunTask from the intent service to force it to run immediately instead of
         // scheduling a task.
         new StockTaskService(this).onRunTask(new TaskParams(intent.getStringExtra(TAG), args));
-        if (!SharedPreferenceManager.getGCMStatus()) {
+        if (!GCMStateHolder.getGCMStatus()) {
             sendBroadcast(new Intent(MyStocksActivity.RESULT_FAILURE));
-            SharedPreferenceManager.setGCMStatus(true);
+            GCMStateHolder.setGCMStatus(true);
         }
     }
 }

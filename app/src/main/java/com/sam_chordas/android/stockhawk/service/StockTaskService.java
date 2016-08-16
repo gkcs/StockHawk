@@ -11,12 +11,12 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
-import com.sam_chordas.android.stockhawk.LineGraphActivity;
-import com.sam_chordas.android.stockhawk.SharedPreferenceManager;
+import com.sam_chordas.android.stockhawk.GCMStateHolder;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.exceptions.StockDoesNotExistException;
 import com.sam_chordas.android.stockhawk.rest.Utils;
+import com.sam_chordas.android.stockhawk.ui.LineGraphActivity;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 
@@ -45,6 +45,10 @@ public class StockTaskService extends GcmTaskService {
     private Context mContext;
     private StringBuilder mStoredSymbols = new StringBuilder();
     private boolean isUpdate;
+
+    public StockTaskService() {
+        mContext = getApplicationContext();
+    }
 
     public StockTaskService(final Context context) {
         mContext = context;
@@ -140,8 +144,8 @@ public class StockTaskService extends GcmTaskService {
                             Utils.quoteJsonToContentVals(json, isHistoric));
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
-                    SharedPreferenceManager.setGCMStatus(false);
-                    Log.d("status_task", SharedPreferenceManager.getGCMStatus() + "");
+                    GCMStateHolder.setGCMStatus(false);
+                    Log.d("status_task", GCMStateHolder.getGCMStatus() + "");
                     return GcmNetworkManager.RESULT_FAILURE;
                 }
             } catch (NumberFormatException e) {

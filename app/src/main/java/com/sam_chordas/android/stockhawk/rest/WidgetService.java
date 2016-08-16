@@ -1,4 +1,5 @@
 package com.sam_chordas.android.stockhawk.rest;
+
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
@@ -8,20 +9,19 @@ import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 import android.widget.RemoteViewsService.RemoteViewsFactory;
 
-import com.sam_chordas.android.stockhawk.LineGraphActivity;
 import com.sam_chordas.android.stockhawk.R;
-import com.sam_chordas.android.stockhawk.SharedPreferenceManager;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
+import com.sam_chordas.android.stockhawk.ui.LineGraphActivity;
+
+import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
 public class WidgetService extends RemoteViewsService {
 
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
 
-        WidgetDataProvider dataProvider = new WidgetDataProvider(
-                getApplicationContext(), intent);
-        return dataProvider;
+        return new WidgetDataProvider(getApplicationContext(), intent);
     }
 
 }
@@ -29,13 +29,11 @@ public class WidgetService extends RemoteViewsService {
 class WidgetDataProvider implements RemoteViewsFactory {
 
     Cursor mCollections;
-    private int mAppWidgetId;
     Context mContext;
 
     public WidgetDataProvider(Context context, Intent intent) {
         mContext = context;
-        mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                AppWidgetManager.INVALID_APPWIDGET_ID);
+        intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
     }
 
     @Override
@@ -67,16 +65,16 @@ class WidgetDataProvider implements RemoteViewsFactory {
     public RemoteViews getViewAt(int position) {
         RemoteViews mView = new RemoteViews(mContext.getPackageName(),
                 R.layout.widget_item);
-        if(mCollections.moveToPosition(position)) {
+        if (mCollections.moveToPosition(position)) {
             mView.setTextViewText(R.id.stock_symbol, mCollections.getString(mCollections.getColumnIndex(LineGraphActivity.COLUMN_SYMBOL)));
             mView.setTextViewText(R.id.bid_price, mCollections.getString(mCollections.getColumnIndex(LineGraphActivity.COLUMN_BID_PRICE)));
 
-            if (mCollections.getInt(mCollections.getColumnIndex("is_up")) == 1) {
+            if (mCollections.getInt(mCollections.getColumnIndex(QuoteColumns.ISUP)) == 1) {
                 mView.setTextColor(R.id.change, Color.GREEN);
             } else {
                 mView.setTextColor(R.id.change, Color.RED);
             }
-            if (SharedPreferenceManager.getShowPercentage()) {
+            if (getPercentagePreference()) {
                 mView.setTextViewText(R.id.change, mCollections.getString(mCollections.getColumnIndex(LineGraphActivity.COLUMN_PERCENT_CHANGE)));
             } else {
                 mView.setTextViewText(R.id.change, mCollections.getString(mCollections.getColumnIndex(LineGraphActivity.COLUMN_CHANGE)));
@@ -85,13 +83,19 @@ class WidgetDataProvider implements RemoteViewsFactory {
         return mView;
     }
 
+    private boolean getPercentagePreference() {
+        return getDefaultSharedPreferences(mContext)
+                .getString(mContext.getString(R.string.show_percentage_key),
+                        mContext.getString(R.string.show_percentage_value))
+                .equals(mContext.getString(R.string.show_percentage_value));
+    }
 
     @Override
     public void onCreate() {
         Thread thread = new Thread() {
             public void run() {
                 mCollections = mContext.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
-                        new String[]{ QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
+                        new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
                                 QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
                         QuoteColumns.ISCURRENT + " = ?",
                         new String[]{"1"},
@@ -116,7 +120,7 @@ class WidgetDataProvider implements RemoteViewsFactory {
         Thread thread = new Thread() {
             public void run() {
                 mCollections = mContext.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
-                        new String[]{ QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
+                        new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
                                 QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
                         QuoteColumns.ISCURRENT + " = ?",
                         new String[]{"1"},

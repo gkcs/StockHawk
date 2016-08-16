@@ -1,4 +1,5 @@
-package com.sam_chordas.android.stockhawk;
+package com.sam_chordas.android.stockhawk.ui;
+
 import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -21,7 +22,6 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.utils.Utils;
 import com.sam_chordas.android.stockhawk.R;
-import com.sam_chordas.android.stockhawk.SharedPreferenceManager;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.service.StockIntentService;
 
@@ -29,6 +29,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+
+import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
 public class LineGraphActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -85,17 +87,12 @@ public class LineGraphActivity extends AppCompatActivity implements LoaderManage
 
         mSymbol = getIntent().getStringExtra(COLUMN_SYMBOL);
         setTitle(mSymbol + " " + getResources().getString(R.string.historic_data));
-
-        assert mStockSymbol != null;
         mStockSymbol.setText(mSymbol);
-        assert mBidPrice != null;
         mBidPrice.setText(getIntent().getStringExtra(COLUMN_BID_PRICE));
         setChange();
-
         Cursor c = getContentResolver().query(QuoteProvider.QuotesHistoric.withSymbol(mSymbol), null, null, null, null);
-        assert c != null;
-        if(c.getCount() == 0 || checkLastDate(c)){
-            getContentResolver().delete(QuoteProvider.QuotesHistoric.withSymbol(mSymbol),null,null);
+        if (c.getCount() == 0 || checkLastDate(c)) {
+            getContentResolver().delete(QuoteProvider.QuotesHistoric.withSymbol(mSymbol), null, null);
             mServiceIntent.putExtra("tag", "historic");
             mServiceIntent.putExtra("symbol", mSymbol);
             startService(mServiceIntent);
@@ -122,12 +119,12 @@ public class LineGraphActivity extends AppCompatActivity implements LoaderManage
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         return new CursorLoader(this, QuoteProvider.QuotesHistoric.withSymbol(mSymbol),
-                null, null, null,null);
+                null, null, null, null);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        if(cursor.getCount() > 0) {
+        if (cursor.getCount() > 0) {
             resetChart(cursor);
         }
     }
@@ -136,13 +133,14 @@ public class LineGraphActivity extends AppCompatActivity implements LoaderManage
     public void onLoaderReset(Loader<Cursor> loader) {
 
     }
-    public void resetChart(Cursor cursor){
+
+    public void resetChart(Cursor cursor) {
         mChart.clear();
-        if(cursor.getCount() <= 0) return;
+        if (cursor.getCount() <= 0) return;
         ArrayList<Entry> entries = new ArrayList<>();
         ArrayList<String> labels = new ArrayList<>();
         int i = 0;
-        while(cursor.moveToNext()){
+        while (cursor.moveToNext()) {
             float close = Float.parseFloat(cursor.getString(cursor.getColumnIndex(COLUMN_CLOSE)));
             entries.add(new Entry(close, i));
             labels.add(i, cursor.getString(cursor.getColumnIndex(COLUMN_DATE)));
@@ -167,27 +165,26 @@ public class LineGraphActivity extends AppCompatActivity implements LoaderManage
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        switch (id){
-            case R.id.action_change_units :
-                // this is for changing stock changes from percent value to dollar value
-                SharedPreferenceManager.setShowPercentage(!SharedPreferenceManager.getShowPercentage());
-                setChange();
-                break;
+        if (item.getItemId() == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private boolean getPercentagePreference() {
+        return getDefaultSharedPreferences(getApplicationContext())
+                .getString(getString(R.string.show_percentage_key),
+                        getString(R.string.show_percentage_value))
+                .equals(getString(R.string.show_percentage_value));
+    }
+
     private void setChange() {
-        if (SharedPreferenceManager.getShowPercentage()) {
+        if (getPercentagePreference()) {
             String change = getIntent().getStringExtra(COLUMN_PERCENT_CHANGE);
             mChange.setText(change);
             setColor(change);
-        }else{
+        } else {
             String change = getIntent().getStringExtra(COLUMN_CHANGE);
             mChange.setText(change);
             setColor(change);
@@ -203,19 +200,19 @@ public class LineGraphActivity extends AppCompatActivity implements LoaderManage
     }
 
     public void setColor(String change) {
-        if (change.startsWith("+")){
+        if (change.startsWith("+")) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mChange.setBackground(
                         getResources().getDrawable(R.drawable.percent_change_pill_green, null));
-            }else {
+            } else {
                 mChange.setBackgroundDrawable(
                         getResources().getDrawable(R.drawable.percent_change_pill_green));
             }
-        } else{
+        } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mChange.setBackground(
                         getResources().getDrawable(R.drawable.percent_change_pill_red, null));
-            }else {
+            } else {
                 mChange.setBackgroundDrawable(
                         getResources().getDrawable(R.drawable.percent_change_pill_red));
             }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="show_percentage_values">
+        <item>Yes</item>
+        <item>No</item>
+    </string-array>
+    <string-array name="percentage_options">
+        <item>Yes</item>
+        <item>No</item>
+    </string-array>
+</resources>
