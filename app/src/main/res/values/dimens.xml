@@ -9,6 +9,7 @@
     <dimen name="chart_width">300dp</dimen>
     <dimen name="list_item_height">72dp</dimen>
     <dimen name="text_size_detail_activity">25sp</dimen>
+    <dimen name="padding">16dp</dimen>
     <dimen name="price_text_padding">8dp</dimen>
     <dimen name="change_text_padding">4dp</dimen>
     <dimen name="error_image_padding_top">10dp</dimen>

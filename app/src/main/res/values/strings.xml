@@ -25,4 +25,5 @@
     <string name="date_format" translatable="false">yyyy-MM-dd</string>
     <string name="show_percentage_key">Show Percentage?</string>
     <string name="show_percentage_value">No</string>
+    <string name="stock_saved_message">This stock is already saved!</string>
 </resources>
