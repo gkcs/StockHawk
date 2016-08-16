@@ -5,7 +5,7 @@ import net.simonvt.schematic.annotation.DataType;
 import net.simonvt.schematic.annotation.NotNull;
 import net.simonvt.schematic.annotation.PrimaryKey;
 
-public class QuoteHistoricData {
+public class HistoricDataColumns {
 
     @DataType(DataType.Type.INTEGER)
     @PrimaryKey

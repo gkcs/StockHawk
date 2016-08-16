@@ -40,6 +40,7 @@ public class StockTaskService extends GcmTaskService {
     public static final String PERIODIC = "periodic";
     public static final String UTF_8 = "UTF-8";
     public static final String ADD = "add";
+    public static final int TEN_DAYS_TIME = 10 * 24 * 60 * 60 * 1000;
     private String LOG_TAG = StockTaskService.class.getSimpleName();
     private OkHttpClient client = new OkHttpClient();
     private Context mContext;
@@ -103,7 +104,6 @@ public class StockTaskService extends GcmTaskService {
             }
         } else if (params.getTag().equals(ADD)) {
             isUpdate = false;
-            // get symbol from params.getExtra and build query
             try {
                 urlStringBuilder.append(encode("\"" + params.getExtras().getString(QuoteColumns.SYMBOL) + "\")", UTF_8));
             } catch (final UnsupportedEncodingException e) {
@@ -111,11 +111,11 @@ public class StockTaskService extends GcmTaskService {
             }
         } else if (params.getTag().equals(LineGraphActivity.TABLE_HISTORIC)) {
             isHistoric = true;
-            //Getting historic data for past 7 days.
+            //Getting historic data for past 10 days.
             String stockInput = params.getExtras().getString(QuoteColumns.SYMBOL);
             Date startDate = new Date();
             Date endDate = new Date();
-            startDate.setTime(startDate.getTime() - 10 * 24 * 60 * 60 * 1000);
+            startDate.setTime(startDate.getTime() - TEN_DAYS_TIME);
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
             try {
                 urlStringBuilder.append(URLEncoder.encode("select * from yahoo.finance.historicaldata where symbol = \"" +
@@ -126,7 +126,6 @@ public class StockTaskService extends GcmTaskService {
                 e.printStackTrace();
             }
         }
-        // finalize the URL for the API query.
         urlStringBuilder.append("&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables."
                 + "org%2Falltableswithkeys&callback=");
         try {

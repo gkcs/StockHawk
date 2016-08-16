@@ -15,7 +15,7 @@ public class QuoteProvider {
 
     interface Path {
         String QUOTES = "quotes";
-        String QUOTE_HISTORIC = "quote_historic";
+        String HISTORIC_DATA = "historic_data";
     }
 
     private static Uri buildUri(String... paths) {
@@ -46,24 +46,24 @@ public class QuoteProvider {
         }
     }
 
-    @TableEndpoint(table = QuoteDatabase.QUOTE_HISTORIC)
+    @TableEndpoint(table = QuoteDatabase.HISTORIC_DATA)
     public static class QuotesHistoric {
         @ContentUri(
-                path = Path.QUOTE_HISTORIC,
+                path = Path.HISTORIC_DATA,
                 type = "vnd.android.cursor.dir/quote_historic"
         )
-        public static final Uri CONTENT_URI = buildUri(Path.QUOTE_HISTORIC);
+        public static final Uri CONTENT_URI = buildUri(Path.HISTORIC_DATA);
 
         @InexactContentUri(
                 name = "QUOTE_HISTORIC_ID",
-                path = Path.QUOTE_HISTORIC + "/*",
+                path = Path.HISTORIC_DATA + "/*",
                 type = "vnd.android.cursor.item/quote_historic",
-                whereColumn = QuoteHistoricData.SYMBOL,
-                defaultSort = QuoteHistoricData.DATE + " ASC",
+                whereColumn = HistoricDataColumns.SYMBOL,
+                defaultSort = HistoricDataColumns.DATE + " ASC",
                 pathSegment = 1
         )
         public static Uri withSymbol(String symbol) {
-            return buildUri(Path.QUOTE_HISTORIC, symbol);
+            return buildUri(Path.HISTORIC_DATA, symbol);
         }
     }
 }

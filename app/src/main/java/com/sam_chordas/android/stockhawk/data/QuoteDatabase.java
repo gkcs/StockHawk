@@ -13,6 +13,6 @@ public class QuoteDatabase {
     @Table(QuoteColumns.class)
     public static final String QUOTES = "quotes";
 
-    @Table(QuoteHistoricData.class)
-    public static final String QUOTE_HISTORIC = "quote_historic";
+    @Table(HistoricDataColumns.class)
+    public static final String HISTORIC_DATA = "historic_data";
 }

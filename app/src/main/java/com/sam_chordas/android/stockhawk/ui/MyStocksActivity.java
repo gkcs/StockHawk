@@ -77,10 +77,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
         setContentView(R.layout.activity_my_stocks);
-        ImageView imageView = (ImageView) findViewById(R.id.error_image);
-        TextView errorText = (TextView) findViewById(R.id.error_text);
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        final ImageView errorImage = (ImageView) findViewById(R.id.error_image);
+        final TextView errorText = (TextView) findViewById(R.id.error_text);
+        final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         // The intent service is for executing immediate pulls from the Yahoo API
         // GCMTaskService can only schedule tasks, they cannot execute immediately
         mServiceIntent = new Intent(this, StockIntentService.class);
@@ -96,7 +96,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             } else {
                 recyclerView.setVisibility(View.GONE);
                 fab.setVisibility(View.GONE);
-                imageView.setVisibility(View.VISIBLE);
+                errorImage.setVisibility(View.VISIBLE);
                 if (errorText != null) {
                     errorText.setVisibility(View.VISIBLE);
                 } else {

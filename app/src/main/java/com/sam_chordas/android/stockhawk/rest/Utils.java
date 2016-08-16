@@ -4,7 +4,7 @@ import android.content.ContentProviderOperation;
 import android.util.Log;
 
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
-import com.sam_chordas.android.stockhawk.data.QuoteHistoricData;
+import com.sam_chordas.android.stockhawk.data.HistoricDataColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.exceptions.StockDoesNotExistException;
 
@@ -114,12 +114,12 @@ public class Utils {
     public static ContentProviderOperation buildBatchOperationHistoric(JSONObject jsonObject) {
         try {
             return ContentProviderOperation.newInsert(QuoteProvider.QuotesHistoric.CONTENT_URI)
-                    .withValue(QuoteHistoricData.SYMBOL, jsonObject.getString("Symbol"))
-                    .withValue(QuoteHistoricData.DATE, jsonObject.getString("Date"))
-                    .withValue(QuoteHistoricData.OPEN, jsonObject.getString("Open"))
-                    .withValue(QuoteHistoricData.HIGH, jsonObject.getString("High"))
-                    .withValue(QuoteHistoricData.LOW, jsonObject.getString("Low"))
-                    .withValue(QuoteHistoricData.CLOSE, jsonObject.getString("Close"))
+                    .withValue(HistoricDataColumns.SYMBOL, jsonObject.getString("Symbol"))
+                    .withValue(HistoricDataColumns.DATE, jsonObject.getString("Date"))
+                    .withValue(HistoricDataColumns.OPEN, jsonObject.getString("Open"))
+                    .withValue(HistoricDataColumns.HIGH, jsonObject.getString("High"))
+                    .withValue(HistoricDataColumns.LOW, jsonObject.getString("Low"))
+                    .withValue(HistoricDataColumns.CLOSE, jsonObject.getString("Close"))
                     .build();
         } catch (JSONException e) {
             Log.e(LOG_TAG, "buildBatchOperationHistoric: Exception while parsing JSON", e);
